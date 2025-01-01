@@ -1,0 +1,16 @@
+[Properties]
+Version=23.0
+[WorkspacePaths]
+ConfigFile=.\Programs\Config.ws
+[Preferences]
+DefaultFormHeight=12
+[Conditionals]
+Is$WebApp=False
+Is$Win64=False
+[Projects]
+Project0=Order.src
+Project1=SetupDataFolders.src
+[ProjectParameters]
+SetupDataFolders.src=/adm
+[Libraries]
+Lib1=Libraries\DataFolderSelector\DataFolderSelector23.0.sws

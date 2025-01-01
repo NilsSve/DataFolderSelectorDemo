@@ -1,0 +1,637 @@
+Use dfrptvw.pkg
+Use DataDict.pkg
+Use Windows.pkg
+Use cWinReport2.pkg
+
+Use cVendorDataDictionary.dd
+Use cInventoryDataDictionary.dd
+Use cCustomerDataDictionary.dd
+Use cSalesPersonDataDictionary.dd
+Use cOrderHeaderDataDictionary.dd
+Use cOrderDetailDataDictionary.dd
+
+Activate_View Activate_oOrdersByCustomerWP for oOrdersByCustomerWP
+
+Object oOrdersByCustomerWP is a ReportView
+    
+    Property Integer main_dd
+    Property Integer server
+    
+    Set Label to "Orders by Customer"
+    Set Location to 6 6
+    Set Size to 110 174
+    
+    Object oVendorDataDictionary is a cVendorDataDictionary
+    End_Object
+    
+    Object oInventoryDataDictionary is a cInventoryDataDictionary
+        Set DDO_Server to oVendorDataDictionary
+    End_Object
+    
+    Object oCustomerDataDictionary is a cCustomerDataDictionary
+    End_Object
+    
+    Object oSalesPersonDataDictionary is a cSalesPersonDataDictionary
+    End_Object
+    
+    Object oOrderHeaderDataDictionary is a cOrderHeaderDataDictionary
+        Set DDO_Server to oCustomerDataDictionary
+        Set DDO_Server to oSalesPersonDataDictionary
+        Set Constrain_File to Customer.File_Number
+    End_Object
+    
+    Object oOrderDetailDataDictionary is a cOrderDetailDataDictionary
+        Set DDO_Server to oOrderHeaderDataDictionary
+        Set DDO_Server to oInventoryDataDictionary
+        Set Constrain_File to OrderHeader.File_Number
+    End_Object
+    
+    Set Main_DD to oCustomerDataDictionary
+    Set Server to oCustomerDataDictionary
+    
+    Object oPrintTo is a RadioGroup
+        Set Size to 38 105
+        Set Location to 5 5
+        Set Label to "Print to"
+        Object oRadio1 is a Radio
+            Set Label to "Preview"
+            Set Size to 10 42
+            Set Location to 12 6
+            Set Status_Help to "Prints the report to screen"
+        End_Object
+        
+        Object oRadio2 is a Radio
+            Set Label to "Printer"
+            Set Size to 10 42
+            Set Location to 24 6
+            Set Status_Help to "Prints the report to printer"
+        End_Object
+        
+    End_Object
+    
+    Object oReportOrder is a RadioGroup
+        Set Size to 38 105
+        Set Location to 45 5
+        Set Label to "Report Order"
+        Object oRadio3 is a Radio
+            Set Label to "Customer Number"
+            Set Size to 10 73
+            Set Location to 12 6
+            Set Status_Help to "Prints the report to screen"
+        End_Object
+        
+        Object oRadio4 is a Radio
+            Set Label to "Customer Name"
+            Set Size to 10 67
+            Set Location to 24 6
+            Set Status_Help to "Prints the report to printer"
+        End_Object
+        
+        Function OrderByNumber Returns Boolean
+            Function_Return (current_radio(Self)=0)
+        End_Function
+        
+    End_Object
+    
+    Object oSetupButton is a Button
+        Set Label to "Printer Setup"
+        Set Location to 7 120
+        
+        Procedure OnClick
+            Boolean bSetupOk
+            Get DFPrintSetupDialog of oOrders to bSetupOk
+        End_Procedure
+        
+    End_Object
+    
+    Object oBtnPrint is a Button
+        Set Label to "Print"
+        Set Location to 49 120
+        Set Status_Help to "Print the Selected report"
+        Set Default_State to True
+        
+        Procedure OnClick
+            Boolean bByNumber
+            Get OrderByNumber of oReportOrder  to bByNumber
+            Set Ordering of oOrders to (If(bByNumber,1,2))
+            Send StartReport
+        End_Procedure
+        
+    End_Object
+    
+    Object oBtnCancel is a Button
+        Set Label to "Cancel"
+        Set Location to 67 120
+        Set Status_Help to "Close this Panel"
+        
+        Procedure OnClick
+            Send Close_Panel
+        End_Procedure
+        
+    End_Object
+    
+    Object oOnePageCkBx is a CheckBox
+        Set Label to "New Page for Each Customer"
+        Set Size to 10 110
+        Set Location to 92 6
+        
+        Procedure OnChange
+            Boolean bChecked
+            
+            Get Checked_State to bChecked
+        End_Procedure
+        
+    End_Object
+    
+    Object oOrders is a cWinReport2
+        
+        Property Boolean pbOnePagePerCust False
+        
+        Set Report_Title to "Printing all Orders by Customer"
+        
+        //Main File for the report
+        Set Server to oCustomerDataDictionary
+        //Breaks and Index for the report
+        Report_Breaks Customer.Customer_number
+        
+        Set Ordering to 2
+        
+        Object oOrderHeader is a cWinReport2
+            
+            Set Server to oOrderHeaderDataDictionary
+            Report_Breaks ORDERHEAder.Order_number
+            Set Ordering to 2
+            
+            Object oOrderDetail is a cWinReport2
+                
+                Set Server to oOrderDetailDataDictionary
+                Report_Breaks OrderHeader.Order_Number
+                Set Ordering to 1
+                
+                Procedure SubHeader1
+                    Send Update_Status (Customer.Name - '/' - String(OrderHeader.Order_number))
+                    
+                    DFFont "Arial"
+                    DFFontSize 8
+                    
+                    DFBeginHeader DFSubHeader 2
+                    DFHeaderFrame hdr_NoFrame
+                    DFHeaderPos   hdr_Left
+                    DFHeaderWrap hdr_Wrap
+                    DFHeaderMargin hm_BottomOuter 0.04
+                    DFHeaderLineCheck 5            //Check that the header + 5 lines fits on the page, if not wrap
+                    
+                    DFWritePos    "Order Number"            0.10  (FONT_BOLD+RGB_DBLUE)
+                    DFWriteLnPos  OrderHeader.Order_number       4.0   (FONT_DEFAULT)
+                    DFWritePos    "Order Date"              0.10  (FONT_BOLD+RGB_DBLUE)
+                    DFWriteLnPos  OrderHeader.Order_date         4.0   (FONT_DEFAULT)
+                    DFWritePos    "Terms"                   0.10  (FONT_BOLD+RGB_DBLUE)
+                    DFWriteLnPos  OrderHeader.Terms              4.0   (FONT_DEFAULT)
+                    DFWritePos    "Ship Via"                0.10  (FONT_BOLD+RGB_DBLUE)
+                    DFWriteLnPos  OrderHeader.Ship_via           4.0   (FONT_DEFAULT)
+                    
+                    DFWriteRect dfgr_CurrLine 0 0.34 dfgr_rb_Margin rgb_Grey 0.0 dfgr_NoWrap rgb_Grey
+                    DFWritePos    "Item Id"                 0.1     (FONT_BOLD+RGB_DBLUE)            -1 1.36
+                    DFWritePos    "Description"             4.00    (FONT_BOLD+RGB_DBLUE)            -1 4.77
+                    DFWritePos    "Qty Ordered"             11.5     (FONT_BOLD+FONT_RIGHT+RGB_DBLUE) -1 1.87
+                    DFWritePos    "Price"                   13.22   (FONT_BOLD+FONT_RIGHT+RGB_DBLUE) -1 1.22
+                    DFWritePos    "Extended Price"          16.0    (FONT_BOLD+FONT_RIGHT+RGB_DBLUE) -1 2.50
+                    DFWriteLn
+                    
+                    DFEndHeader
+                    
+                End_Procedure
+                
+                Procedure Body // order detail body
+                    
+                    DFFont "Arial"
+                    DFFontSize 8
+                    
+                    DFLineCheck 5
+                    
+                    DFWritePos    Inventory.Item_id                0.1     (FONT_DEFAULT)            -1 2.28
+                    DFWritePos    Inventory.Description            4.00    (FONT_DEFAULT)            -1 4.77
+                    DFWritePos    OrderDetail.Qty_ordered        11.5     (FONT_DEFAULT+FONT_RIGHT)  0 1.87
+                    DFWritePos    OrderDetail.Price              13.22   (FONT_DEFAULT+FONT_RIGHT)  2 1.22
+                    DFWritePos    OrderDetail.Extended_price     16.0    (FONT_DEFAULT+FONT_RIGHT)  2 2.50
+                    DFWriteLn
+                    
+                    // Using rectotal in WinPrint.
+                    Send Add_SubTotal 1 (OrderDetail.Extended_price)
+                    
+                End_Procedure
+                
+                Procedure SubTotal1 // order total
+                    Number nAmount
+                    
+                    Get SubTotal 1 to nAmount
+                    Send Add_SubTotal 2 nAmount // subtotal 2 is customer total
+                    
+                    DFFont "Arial"
+                    DFFontSize 8
+                    DFBeginHeader DFSubTotal 2
+                    DFHeaderPos hdr_Left
+                    DFHeaderFrame hdr_Margins 0.01 rgb_dGrey rgb_Grey
+                    DFHeaderMargin hm_TopInner 0.02
+                    DFHeaderMargin hm_BottomInner 0.02
+                    DFHeaderMargin hm_BottomOuter 0.08
+                    DFHeaderMargin hm_TopOuter 0.04
+                    
+                    DFWritePos   "Order Total:"  14.0  (FONT_BOLD+RGB_DBLUE+FONT_RIGHT)
+                    DFWriteLnPos nAmount         16.0   (FONT_RIGHT) 2
+                    DFEndHeader
+                    
+                End_Procedure
+                
+            End_Object
+            
+        End_Object
+        
+        Function Starting_Main_Report Returns Integer
+            Integer iRetVal bBreak
+            Get OnePagePerCust to bBreak
+            Set pbOnePagePerCust to bBreak
+            Send DFSetMetrics to WinPrintId "CM"
+            Send DFSetmargins to WinPrintId 1 1 1 1
+            Forward Get Starting_Main_Report to iRetVal
+            If iRetVal;
+                Function_Return iRetVal
+        End_Function
+        
+        Procedure Page_Top
+            DFFont "Arial"
+            DFFontSize 8
+            DFBeginHeader DFPageTop
+            DFHeaderFrame hdr_NoFrame
+            DFHeaderPos   hdr_Right
+            
+            DFWriteLn ("Page:" * "#pagecount#")
+            DFEndHeader
+        End_Procedure
+        
+        Procedure Page_Title
+            DFFont "Arial"
+            DFFontSize 14
+            DFBeginHeader DFPageTitle
+            DFHeaderFrame hdr_Margins 0.01 rgb_dGrey rgb_dGrey
+            DFHeaderPos hdr_Left
+            DFHeaderMargin hm_BottomOuter 0.08
+            
+            DFWriteLnPos "Orders by Customer Report" 0.10 (FONT_BOLD+RGB_WHITE)
+            DFEndHeader
+        End_Procedure
+        
+        Procedure SubHeader1
+            Integer iClr
+            DFFont "Arial" //  Use Arial
+            DFFontSize 8
+            Get DFGetDFColor of winprintId  242 242 242 to iClr // Move -218959360 to iClr  can be used instead
+            
+            DFBeginHeader DFSubHeader 1 // customer sub-header
+            DFHeaderFrame hdr_Margins 0.01 rgb_dGrey iClr
+            DFHeaderPos   hdr_Left
+            DFHeaderWrap hdr_Wrap
+            DFHeaderLineCheck 10 //Check that the header + 10 lines fits on the page, if not wrap
+            
+            DFWritePos    "Customer Number"         0.10  (FONT_BOLD+RGB_DBLUE)
+            DFWriteLnPos  Customer.Customer_number    4.0
+            DFWritePos    "Name"                    0.10  (FONT_BOLD+RGB_DBLUE)
+            DFWriteLnPos  Customer.Name               4.0   (FONT_DEFAULT)
+            DFWritePos    "Address"                 0.10  (FONT_BOLD+RGB_DBLUE)
+            DFWriteLnPos  Customer.Address            4.0   (FONT_DEFAULT)
+            DFWritePos    "City"                    0.10  (FONT_BOLD+RGB_DBLUE)
+            DFWriteLnPos  Customer.City               4.0   (FONT_DEFAULT)
+            DFWritePos    "State"                   0.10  (FONT_BOLD+RGB_DBLUE)
+            DFWriteLnPos  Customer.State              4.0   (FONT_DEFAULT)
+            DFWritePos    "Zip"                     0.10  (FONT_BOLD+RGB_DBLUE)
+            DFWriteLnPos  Customer.Zip                4.0   (FONT_DEFAULT)
+            DFEndHeader
+        End_Procedure
+        
+        Procedure SubTotal1 // customer total
+            Number nAmount
+            Integer iClr
+            Boolean bBreak
+            
+            Get SubTotal 2 to nAmount
+            Send Add_SubTotal 3 nAmount // subtotal 3 is total of all
+            
+            Get DFGetDFColor of winprintId  242 242 242 to iClr // Move -218959360 to iClr   can be used instead
+            
+            DFFont "Arial" //  Use Arial
+            DFFontSize 8
+            DFBeginHeader DFSubTotal 1
+            DFHeaderPos hdr_Left
+            DFHeaderFrame hdr_Margins 0.01 rgb_dGrey iClr
+            DFHeaderMargin hm_BottomOuter 0.16
+            
+            DFWritePos   "Customer Total:"  14.0 (FONT_BOLD+RGB_DBLUE+FONT_RIGHT)
+            DFWriteLnPos nAmount 16.0              (FONT_RIGHT+FONT_Bold) 2 0
+            DFEndHeader
+            Get pbOnePagePerCust to bBreak
+            If bBreak Begin
+                Send DFNew_Page
+            End
+        End_Procedure
+        
+        Procedure Total // total of all customers
+            Number nTotal
+            Get SubTotal 3 to nTotal
+            
+            DFFont "Arial" //  Use Arial
+            DFFontSize 10
+            
+            DFBeginHeader DFTotal
+            
+            DFHeaderPos   hdr_Left
+            DFHeaderFrame hdr_Margins 0.01 rgb_dGrey rgb_Grey
+            
+            DFWritePos    "Grand Total:"  14.0        (FONT_BOLD+RGB_DBLUE+FONT_RIGHT)
+            DFWriteLnPos   nTotal         16.0      (FONT_BOLD+FONT_RIGHT) 2
+            
+            DFEndHeader                     //End and print header
+            
+        End_Procedure
+        
+        Procedure Page_Bottom
+            DateTime dtDT
+            Move (CurrentDateTime()) to dtDT
+            
+            DFFont "Arial"
+            DFFontSize 8
+            DFBeginHeader DFPageBottom
+            DFHeaderPos   hdr_Center
+            DFHeaderFrame hdr_Margins 0.01 rgb_dGrey
+            DFWriteLn   ("Report Printed on: " +String(dtDT)) (rgb_dBlue)
+            DFEndHeader
+            
+        End_Procedure
+        
+    End_Object
+    
+    // Procedures and functions used by the user interface
+    
+    //This function is called by the procedure StartReport
+    Function Print_to_Screen_State Returns Integer
+        Integer iRad
+        Get Current_Radio of oPrintTo to iRad
+        Function_Return (iRad=1)
+    End_Function
+    
+    // Use this procedure to do print setup
+    Procedure SetupReport
+        Boolean bSetupOk
+        Get DFPrintSetupDialog of oOrders to bSetupOk
+    End_Procedure
+    
+    // Use this procedure to start the report
+    Procedure StartReport
+        Boolean bToPrinter
+        String sVal
+        Get Print_to_Screen_State to bToPrinter
+        If bToPrinter;
+            Set OutPut_Device_Mode to PRINT_TO_PRINTER
+        Else;
+            Set OutPut_Device_Mode to PRINT_TO_WINDOW
+        
+        Send Run_Report of oOrders
+        
+    End_Procedure
+    
+    Function OnePagePerCust Returns Boolean
+        Boolean bBreak
+        Get checked_state of oOnePageCkBx to bBreak
+        Function_Return bBreak
+    End_Function
+    
+    // The Report
+    //    Object oOrders is a cWinReport2
+    //    //Object oOrders is a WinReport
+    
+    //        Property Boolean pbOnePagePerCust False
+    //        Set Report_Title to "Printing all Orders by Customer"
+    
+    //        //Main File for the report
+    //        Set Server to CustomerDataDictionary
+    //        //Breaks and Index for the report
+    //        Report_Breaks ORDERHEA.CUSTOMER_NUMBER
+    //        Set Ordering to 2
+    
+    //        Function Starting_Main_Report Returns Integer
+    //            Integer iRetVal bBreak
+    //            Get OnePagePerCust to bBreak
+    //            Set pbOnePagePerCust to bBreak
+    //            Send DFSetMetrics To WinPrintId "CM"
+    //            Send DFSetmargins To WinPrintId 1 1 1 1
+    //            Forward Get Starting_Main_Report To iRetVal
+    //            If iRetVal Function_return iRetVal
+    //        End_Function
+    
+    //        Procedure Page_Top
+    //            DFFont "Arial"
+    //            DFFontSize 8
+    //            DFBeginHeader DFPageTop
+    //                DFHeaderFrame HDR_NOFRAME
+    //                DFHeaderPos   HDR_RIGHT
+    
+    //                DFWriteLn ("Page:" * "#pagecount#")
+    //            DFEndHeader
+    //        End_Procedure
+    
+    //        Procedure Page_Title
+    //            DFFont "Arial"
+    //            DFFontSize 14
+    //            DFBeginHeader DFPageTitle
+    //                DFHeaderFrame HDR_MARGINs 0.01 RGB_DGREY RGB_DGREY
+    //                DFHEADERPOS HDR_LEFT
+    //                DfHeaderMargin hm_BottomOuter 0.08
+    
+    //                DFWritelnPos "Orders by Customer Report" 0.10 (FONT_BOLD+RGB_WHITE)
+    //            DFEndHeader
+    //        End_Procedure
+    
+    //        Procedure SubHeader1
+    //            integer iClr
+    //            DFFont "Arial" //  Use Arial
+    //            DFFontSize 8
+    //            //Get DFGetDFColor of winprintId  242 242 242 to iClr // doesn't work YET
+    //            Move -218959360 to iClr
+    
+    //            DFBeginHeader DFSubHeader 1 // customer sub-header
+    //                DFHeaderFrame hdr_Margins 0.01 rgb_dGrey iClr
+    //                DFHeaderPos   HDR_LEFT
+    //                DFHeaderWrap HDR_WRAP
+    //                DFHeaderLineCheck 10 //Check that the header + 10 lines fits on the page, if not wrap
+    
+    //                DFWritePos    "Customer Number"         0.10  (FONT_BOLD+RGB_DBLUE)
+    //                DFWritelnPos  Customer.CUSTOMER_NUMBER    4.0
+    //                DFWritePos    "Name"                    0.10  (FONT_BOLD+RGB_DBLUE)
+    //                DFWritelnPos  Customer.NAME               4.0   (FONT_DEFAULT)
+    //                DFWritePos    "Address"                 0.10  (FONT_BOLD+RGB_DBLUE)
+    //                DFWritelnPos  Customer.ADDRESS            4.0   (FONT_DEFAULT)
+    //                DFWritePos    "City"                    0.10  (FONT_BOLD+RGB_DBLUE)
+    //                DFWritelnPos  Customer.CITY               4.0   (FONT_DEFAULT)
+    //                DFWritePos    "State"                   0.10  (FONT_BOLD+RGB_DBLUE)
+    //                DFWritelnPos  Customer.STATE              4.0   (FONT_DEFAULT)
+    //                DFWritePos    "Zip"                     0.10  (FONT_BOLD+RGB_DBLUE)
+    //                DFWritelnPos  Customer.ZIP                4.0   (FONT_DEFAULT)
+    //            DFEndHeader
+    //        End_Procedure
+    
+    //        Object oOrderHea is a cWinReport2
+    //    //        Object oOrders is a WinReport
+    
+    //            Set Server to OrderHeaderDataDictionary
+    //            Report_Breaks ORDERHEA.Order_number
+    //            set Ordering to 2
+    
+    //            Object oOrderDetail is a cWinReport2
+    //    //            Object oOrders is a WinReport
+    
+    //                Set Server to OrderDetailDataDictionary
+    //                Report_Breaks ORDERHEA.Order_Number
+    //                Set Ordering to 1
+    
+    //                Procedure SubHeader1 // order sub-header
+    //                      Send Update_Status (Customer.Name - '/' - string(OrderHeader.order_number))
+    
+    //                      DFFont "Arial"
+    //                      DFFontSize 8
+    
+    //                      DFBeginHeader DFSubHeader 2
+    //                        DFHeaderFrame hdr_NoFrame
+    //                        DFHeaderPos   HDR_LEFT
+    //                        DFHeaderWrap HDR_WRAP
+    //                        DfHeaderMargin hm_BottomOuter 0.04
+    //                        DFHeaderLineCheck 5            //Check that the header + 5 lines fits on the page, if not wrap
+    
+    //                        DFWritePos    "Order Number"            0.10  (FONT_BOLD+RGB_DBLUE)
+    //                        DFWritelnPos  OrderHeader.ORDER_NUMBER       4.0   (FONT_DEFAULT)
+    //                        DFWritePos    "Order Date"              0.10  (FONT_BOLD+RGB_DBLUE)
+    //                        DFWritelnPos  OrderHeader.ORDER_DATE         4.0   (FONT_DEFAULT)
+    //                        DFWritePos    "Terms"                   0.10  (FONT_BOLD+RGB_DBLUE)
+    //                        DFWritelnPos  OrderHeader.TERMS              4.0   (FONT_DEFAULT)
+    //                        DFWritePos    "Ship Via"                0.10  (FONT_BOLD+RGB_DBLUE)
+    //                        DFWritelnPos  OrderHeader.SHIP_VIA           4.0   (FONT_DEFAULT)
+    
+    //                        DfWriteRect DFGR_CURRLINE 0 0.34 DFGR_RB_MARGIN RGB_GREY 0.0 dfgr_noWrap RGB_GREY
+    //                        DFWritePos    "Item Id"                 0.1     (FONT_BOLD+RGB_DBLUE)            -1 1.36
+    //                        DFWritePos    "Description"             2.36    (FONT_BOLD+RGB_DBLUE)            -1 4.77
+    //                        DFWritePos    "Qty Ordered"             9.5     (FONT_BOLD+FONT_RIGHT+RGB_DBLUE) -1 1.87
+    //                        DFWritePos    "Price"                   11.22   (FONT_BOLD+FONT_RIGHT+RGB_DBLUE) -1 1.22
+    //                        DFWritePos    "Extended Price"          14.1    (FONT_BOLD+FONT_RIGHT+RGB_DBLUE) -1 2.38
+    //                        DFWriteln
+    
+    //                      DFEndHeader
+    
+    //                End_Procedure
+    
+    //                Procedure Body // order detail body
+    
+    //                    DFFont "Arial"
+    //                    DFFontSize 8
+    
+    //                    DFLineCheck 5
+    
+    //                    DFWritePos    Inventory.ITEM_ID                0.1     (FONT_DEFAULT)            -1 2.24
+    //                    DFWritePos    Inventory.DESCRIPTION            2.36    (FONT_DEFAULT)            -1 4.77
+    //                    DFWritePos    OrderDetail.QTY_ORDERED        9.5     (FONT_DEFAULT+FONT_RIGHT)  0 1.87
+    //                    DFWritePos    OrderDetail.PRICE              11.22   (FONT_DEFAULT+FONT_RIGHT)  2 1.22
+    //                    DFWritePos    OrderDetail.EXTENDED_PRICE     14.1    (FONT_DEFAULT+FONT_RIGHT)  2 2.38
+    //                    DFWriteln
+    
+    //                    // Using rectotal in WinPrint.
+    //                    Send Add_SubTotal 1 (OrderDetail.EXTENDED_PRICE)
+    
+    //                End_Procedure
+    
+    //                Procedure SubTotal1 // order total
+    //                    Number nAmount
+    
+    //                    Get SubTotal 1 to nAmount
+    //                    Send Add_SubTotal 2 nAmount // subtotal 2 is customer total
+    
+    //                    DFFont "Arial"
+    //                    DFFontSize 8
+    //                    DFBeginHeader DFSubTotal 2
+    //                        DFHEADERPOS HDR_LEFT
+    //                        DFHEADERFRAME HDR_Margins 0.01 rgb_dGrey rgb_Grey
+    //                        DfHeaderMargin hm_TopInner 0.02
+    //                        DfHeaderMargin hm_BottomInner 0.02
+    //                        DfHeaderMargin hm_BottomOuter 0.08
+    //                        DfHeaderMargin hm_TopOuter 0.04
+    
+    //                        DFWritePos   "Order Total:"  12.00  (FONT_BOLD+RGB_DBLUE+FONT_RIGHT)
+    //                        DFWritelnPos nAmount         14.1   (FONT_RIGHT) 2
+    //                    DFEndHeader
+    
+    //                End_Procedure
+    
+    //            end_object // OrderDetail nested report
+    
+    //        end_object // orderhea nested report
+    
+    //        Procedure SubTotal1 // customer total
+    //            Number nAmount
+    //            integer iClr
+    //            Boolean bBreak
+    
+    //            Get SubTotal 2 to nAmount
+    //            Send Add_SubTotal 3 nAmount // subtotal 3 is total of all
+    
+    //            //Get DFGetDFColor of winprintId  242 242 242 to iClr // doesn't work YET
+    //            Move -218959360 to iClr
+    
+    //            DFFont "Arial" //  Use Arial
+    //            DFFontSize 8
+    //            DFBeginHeader DFSubTotal 1
+    //                DFHEADERPOS HDR_LEFT
+    //                DFHeaderFrame HDR_Margins 0.01 RGB_DGREY iClr
+    //                DfHeaderMargin hm_BottomOuter 0.16
+    
+    //                DFWritePos   "Customer Total:"  12.00 (FONT_BOLD+RGB_DBLUE+FONT_RIGHT)
+    //                DFWritelnPos nAmount 14.1              (FONT_RIGHT+FONT_Bold) 2 0
+    //            DFEndHeader
+    //            Get pbOnePagePerCust to bBreak
+    //            If bBreak Begin
+    //                send DFNew_Page
+    //            end
+    //        end_procedure
+    
+    //        Procedure Total // total of all customers
+    //            Number nTotal
+    //            Get SubTotal 3 to nTotal
+    
+    //            DFFont "Arial" //  Use Arial
+    //            DFFontSize 10
+    
+    //            DFBeginHeader DFTotal
+    
+    //                DFHeaderPos   HDR_LEFT
+    //                DFHeaderFrame HDR_MARGINs 0.01 RGB_DGREY RGB_GREY
+    
+    //                DFWritePos    "Grand Total:"  12        (FONT_BOLD+RGB_DBLUE+FONT_RIGHT)
+    //                DFWritelnPos   nTotal         14.1      (FONT_BOLD+FONT_RIGHT) 2
+    
+    //            DFEndHeader                     //End and print header
+    
+    //        End_Procedure
+    
+    //        Procedure Page_Bottom
+    //            DateTime dtDT
+    //            Move (CurrentDateTime()) to dtDT
+    
+    //            DFFont "Arial"
+    //            DFFontSize 8
+    //            DFBeginHeader DFPageBottom
+    //                DFHeaderPos   HDR_CENTER
+    //                DFHeaderFrame HDR_MARGINS 0.01 rgb_dGrey
+    //                DFWriteLn   ("Report Printed on: " +string(dtDT)) (rgb_dBlue)
+    //            DFEndHeader
+    
+    //        End_Procedure
+    
+    //    End_Object // customer main report
+    
+End_Object
+

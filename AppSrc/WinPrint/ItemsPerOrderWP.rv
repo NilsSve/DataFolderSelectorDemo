@@ -1,0 +1,265 @@
+Use dfrptvw.pkg
+Use DataDict.pkg
+Use Windows.pkg
+Use cWinReport2.pkg
+
+Use cVendorDataDictionary.DD
+Use cInventoryDataDictionary.DD
+Use cCustomerDataDictionary.DD
+Use cSalesPersonDataDictionary.DD
+Use cOrderHeaderDataDictionary.DD
+Use cOrderDetailDataDictionary.DD
+
+Activate_View Activate_oItemsPerOrderWP for oItemsPerOrderWP
+
+Object oItemsPerOrderWP is a ReportView
+    Set Label to "Items per Order"
+    Set Location to 6 6
+    Set Size to 84 140
+    
+    Object oVendorDataDictionary is a cVendorDataDictionary
+    End_Object
+    
+    Object oInventoryDataDictionary is a cInventoryDataDictionary
+        Set DDO_Server to oVendorDataDictionary
+    End_Object
+    
+    Object oCustomerDataDictionary is a cCustomerDataDictionary
+    End_Object
+    
+    Object oSalesPersonDataDictionary is a cSalesPersonDataDictionary
+    End_Object
+    
+    Object oOrderHeaderDataDictionary is a cOrderHeaderDataDictionary
+        Set DDO_Server to oCustomerDataDictionary
+        Set DDO_Server to oSalesPersonDataDictionary
+    End_Object
+    
+    Object oOrderDetailDataDictionary is a cOrderDetailDataDictionary
+        Set DDO_Server to oOrderHeaderDataDictionary
+        Set DDO_Server to oInventoryDataDictionary
+    End_Object
+    
+    Object oPrintTo is a RadioGroup
+        Set Size to 38 131
+        Set Location to 5 5
+        Set Label to "Print to"
+        Object oRadio1 is a Radio
+            Set Label to "Preview"
+            Set Size to 10 42
+            Set Location to 12 6
+            Set Status_Help to "Prints the report to screen"
+        End_Object
+        
+        Object oRadio2 is a Radio
+            Set Label to "Printer"
+            Set Size to 10 42
+            Set Location to 24 6
+            Set Status_Help to "Prints the report to printer"
+        End_Object
+        
+    End_Object
+    
+    Object oBtnPrint is a Button
+        Set Label to "Print"
+        Set Location to 48 85
+        Set Status_Help to "Print the Selected report"
+        Set Default_State to True
+        
+        Procedure OnClick
+            Send StartReport
+        End_Procedure
+        
+    End_Object
+    
+    Object oBtnCancel is a Button
+        Set Label to "Cancel"
+        Set Location to 66 85
+        Set Status_Help to "Close this Panel"
+        
+        Procedure OnClick
+            Send Close_Panel
+        End_Procedure
+        
+    End_Object
+    
+    Object oOrders is a cWinReport2
+        Set Report_Title to "Customer Report"
+        
+        //Main File for the report
+        Set Server to oOrderDetailDataDictionary
+        
+        //Breaks and Index for the report
+        Report_Breaks ORDERHEAder.ORDER_NUMBER
+        Set Ordering to 1
+        
+        Function Starting_Main_Report Returns Integer
+            Integer iRetVal
+            Send DFSetMetrics WPM_CM
+            Send DFSetmargins 1 1 1 1
+            Forward Get Starting_Main_Report to iRetVal
+            If iRetVal;
+                Function_Return iRetVal
+        End_Function
+        
+        Procedure Page_Top
+            DFFont "Arial" //  Use Arial
+            DFFontSize 8
+            DFBeginHeader DFPageTop
+            DFHeaderPos   HDR_RIGHT
+            DFHeaderFrame HDR_NOFRAME
+            DFWriteLn ("Page:" * "#pagecount#")
+            DFEndHeader
+        End_Procedure
+        
+        Procedure Page_Header
+            DFFont "Arial"
+            DFFontSize 14
+            DFBeginHeader DFPageHeader
+            DFHeaderFrame HDR_MARGINs 0 RGB_DGREY RGB_DGREY
+            DFHeaderPos HDR_LEFT
+            DFHeaderMargin HM_BottomOuter 0.08
+            DFWriteLnPos "Orders by Order Number Report" 0.10 (FONT_BOLD+RGB_WHITE)
+            DFEndHeader
+        End_Procedure
+        
+        Procedure Page_Title
+            DFFont "Arial"
+            DFFontSize 8
+            DFBeginHeader DFPageTitle
+            DFHeaderFrame HDR_MARGINs 0 RGB_GREY RGB_GREY
+            DFHeaderPos HDR_LEFT
+            DFWritePos    "Item Id"                 0.1     (FONT_BOLD+RGB_DBLUE)            -1 1.36
+            DFWritePos    "Description"             4.00    (FONT_BOLD+RGB_DBLUE)            -1 4.77
+            DFWritePos    "Qty Ordered"             11.5     (FONT_BOLD+FONT_RIGHT+RGB_DBLUE) -1 1.87
+            DFWritePos    "Price"                   13.22   (FONT_BOLD+FONT_RIGHT+RGB_DBLUE) -1 1.22
+            DFWritePos    "Extended Price"          16.0    (FONT_BOLD+FONT_RIGHT+RGB_DBLUE) -1 2.38
+            DFWriteLn
+            DFEndHeader
+        End_Procedure
+        
+        Procedure SubHeader1
+            
+            DFFont "Arial" //  Use Arial
+            DFFontSize 10
+            
+            DFBeginHeader DFSubHeader 1    //Header of type DFSubHeader
+            
+            Send Update_Status ("Order:" * String(OrderHeader.Order_number))
+            
+            DFHeaderWrap HDR_WRAP
+            DFHeaderLineCheck 5            //Check that the header + 5 lines fits on the page, if not wrap
+            
+            DFHeaderPos   HDR_LEFT         //Write data from left margin in the header
+            DFHeaderFrame HDR_NoFrame      //Set the box from margin to margin using size 0.05
+            
+            DFWriteLnPos    ("Order: "+String(OrderHeader.ORDER_NUMBER)) 0.1 (FONT_BOLD)
+            
+            DFEndHeader                     //End and print header
+            
+        End_Procedure
+        
+        Procedure Body
+            
+            DFFont "Arial" //  Use Arial
+            DFFontSize 8
+            
+            DFLineCheck 5
+            
+            DFWritePos    Inventory.ITEM_ID                0.1     (FONT_DEFAULT)            -1 2.28
+            DFWritePos    Inventory.DESCRIPTION            4.00    (FONT_DEFAULT)            -1 4.77
+            DFWritePos    OrderDetail.QTY_ORDERED        11.5     (FONT_DEFAULT+FONT_RIGHT)  0 1.87
+            DFWritePos    OrderDetail.PRICE              13.22   (FONT_DEFAULT+FONT_RIGHT)  2 1.22
+            DFWritePos    OrderDetail.EXTENDED_PRICE     16.0    (FONT_DEFAULT+FONT_RIGHT)  2 2.38
+            DFWriteLn ""
+            
+            // Using SubTotal in WinPrint.
+            Send Add_SubTotal 1 (OrderDetail.EXTENDED_PRICE)
+            
+        End_Procedure
+        
+        Procedure SubTotal1
+            Number nAmount
+            Get SubTotal 1 to nAmount
+            Send Add_SubTotal 2 nAmount // subtotal 2 is total
+            
+            DFFont "Arial" //  Use Arial
+            DFFontSize 8
+            DFBeginHeader DFSubTotal 1
+            
+            DFHeaderPos HDR_LEFT
+            DFHeaderFrame HDR_NOFRAME
+            
+            DFWriteLnPos  nAmount         16.0      (FONT_BOLD+FONT_RIGHT) 2 0
+            DFWriteLine DFGR_CURRLINE DFGR_CURRLINE DFGR_RB_MARGIN DFGR_HORI Rgb_dGrey
+            
+            DFEndHeader
+            
+        End_Procedure
+        
+        Procedure Total
+            Number nTotal
+            Get SubTotal 2 to nTotal
+            
+            DFFont "Arial" //  Use Arial
+            DFFontSize 8
+            DFBeginHeader DFTotal           //Header of type DFTotal
+            
+            DFHeaderPos   HDR_LEFT         //Write data from left margin in the header
+            DFHeaderFrame HDR_MARGINs 0 RGB_DGREY RGB_GREY //rgb_Cyan rgb_Cyan
+            
+            DFWriteLnPos   nTotal         16.0      (FONT_BOLD+FONT_RIGHT) 2
+            
+            DFEndHeader                     //End and print header
+            
+        End_Procedure
+        
+        Procedure Page_Bottom
+            DateTime dtDT
+            Move (CurrentDateTime()) to dtDT
+            
+            DFFont "Arial" //  Use Arial
+            DFFontSize 8
+            DFBeginHeader DFPageBottom
+            DFHeaderPos   HDR_CENTER       //Write data in center
+            DFHeaderFrame HDR_MARGINS 0.01 rgb_dGrey
+            DFWriteLn   ("Report Printed on: " +String(dtDT)) (rgb_dBlue)
+            DFEndHeader
+            
+        End_Procedure
+        
+    End_Object
+    
+    // Procedures and functions used by the user interface
+    
+    //This function is called by the procedure StartReport
+    Function Print_to_Screen_State Returns Integer
+        Integer iRad
+        Get Current_Radio of oPrintTo to iRad
+        Function_Return (iRad=1)
+    End_Function
+    
+    // Use this procedure to do print setup
+    Procedure SetupReport
+        Boolean bSetupOk
+        Get DFPrintSetupDialog of (Report_Object_Id(Self)) to bSetupOk
+    End_Procedure
+    
+    // Use this procedure to start the report
+    Procedure StartReport
+        Integer iToPrinter iRepObj
+        String sVal
+        Get Report_Object_Id to iRepObj
+        
+        Get Print_to_Screen_State to iToPrinter
+        If iToPrinter;
+            Set OutPut_Device_Mode to PRINT_TO_PRINTER
+        Else;
+            Set OutPut_Device_Mode to PRINT_TO_WINDOW
+        
+        Send Run_Report to iRepObj
+        
+    End_Procedure
+    
+End_Object
+
