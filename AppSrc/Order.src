@@ -587,6 +587,10 @@ Send OnStartup
 
 // open Order Entry view on application startup
 Send Activate_oOrderEntryView of (oClientArea(oMain))  
+
+// If you get a compile error about a resource. "..\APPSRC\COMPILEHEADER.H", 
+// you need to compile the program "WriteDateTimeHeaderFile.src" first!
+//
 // If you get a compile error: "Can't include resource ..\HELP\ABOUT.RTF",
 // you need to create a "About.rtf" file in the Help folder.
 // Note that it can be empty, but it needs to exist for the About dialog.

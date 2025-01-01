@@ -7,10 +7,11 @@ DefaultFormHeight=12
 [Conditionals]
 Is$WebApp=False
 Is$Win64=False
+[Libraries]
+Lib1=Libraries\DataFolderSelector\DataFolderSelector24.0.sws
 [Projects]
 Project0=Order.src
 Project1=SetupDataFolders.src
+Project2=WriteDateTimeHeaderFile.src
 [ProjectParameters]
 SetupDataFolders.src=/adm
-[Libraries]
-Lib1=Libraries\DataFolderSelector\DataFolderSelector24.0.sws

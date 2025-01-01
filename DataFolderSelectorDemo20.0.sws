@@ -4,11 +4,14 @@ Version=20.0
 ConfigFile=.\Programs\Config.ws
 [Preferences]
 DefaultFormHeight=12
-[Projects]
-Project0=Order.src
-Project1=SetupDataFolders.src
 [Conditionals]
 Is$WebApp=False
 Is$Win64=False
 [Libraries]
 Lib1=Libraries\DataFolderSelector\DataFolderSelector20.0.sws
+[Projects]
+Project0=Order.src
+Project1=SetupDataFolders.src
+Project2=WriteDateTimeHeaderFile.src
+[ProjectParameters]
+SetupDataFolders.src=/adm
