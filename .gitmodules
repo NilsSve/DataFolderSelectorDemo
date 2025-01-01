@@ -1,0 +1,3 @@
+[submodule "Libraries/DataFolderSelector"]
+	path = Libraries/DataFolderSelector
+	url = https://github.com/NilsSve/Library-DataFolderSelector
