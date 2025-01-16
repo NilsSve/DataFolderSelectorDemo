@@ -506,7 +506,10 @@ Object oMain is a Panel
                 Procedure OnExecute Variant vCommandBarControl
                     String sProgram
                     Get psProgram of ghoApplication to sProgram
-                    // Re-start program.
+                    // Re-start program. 
+                    #IF Is$Win64
+                        Append sProgram "64"
+                    #ENDIF
                     Runprogram (sProgram - ".exe")
                 End_Procedure
 
