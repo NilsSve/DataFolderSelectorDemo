@@ -507,7 +507,7 @@ Object oMain is a Panel
                     String sProgram
                     Get psProgram of ghoApplication to sProgram
                     // Re-start program. 
-                    #IF Is$Win64
+                    #IFDEF Is$Win64
                         Append sProgram "64"
                     #ENDIF
                     Runprogram (sProgram - ".exe")
