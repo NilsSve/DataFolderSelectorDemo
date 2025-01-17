@@ -196,8 +196,8 @@ Object oCJSkinFramework is a cCJSkinFramework
 
 End_Object
 
+Use cRDCToolTipController
 Object oToolTipController is a cToolTipController
-    Move Self to ghoToolTipController
 End_Object
 
 Use oEditContextMenu.pkg
