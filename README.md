@@ -11,7 +11,7 @@ This utility consists of two main components:
 
 ## Usage
 
-The DataFlex Order Entry sample application's `Order.src` program has been modified to showcase how to use the DataFolderSelector library logic in an application. You can find the example [here](https://github.com/NilsSve/Library-DataFolderSelector).
+The DataFlex Order Entry sample application's `Order.src` program has been modified to showcase how to use the DataFolderSelector library logic in an application.
 
 To use the Data Folder Selector Utility in your application:
 
