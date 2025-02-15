@@ -196,7 +196,6 @@ Object oCJSkinFramework is a cCJSkinFramework
 
 End_Object
 
-Use cRDCToolTipController
 Object oToolTipController is a cToolTipController
 End_Object
 
