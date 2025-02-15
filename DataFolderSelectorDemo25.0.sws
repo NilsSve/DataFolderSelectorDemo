@@ -12,6 +12,5 @@ Lib1=Libraries\DataFolderSelector\DataFolderSelector25.0.sws
 [Projects]
 Project0=Order.src
 Project1=SetupDataFolders.src
-Project2=WriteDateTimeHeaderFile.src
 [ProjectParameters]
 SetupDataFolders.src=/adm
