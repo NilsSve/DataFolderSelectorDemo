@@ -1,4 +1,4 @@
-# Data Folder Selector Utility
+# Data Folder Selector Demo
 
 The **Data Folder Selector Utility** allows users to select a Data folder (Client Company) when starting a program.
 
@@ -24,4 +24,4 @@ That's all it takes to integrate the logic!
 
 Below is a sample image showcasing what the `SetupDataFolders.src` program looks like:
 
-![Sample image of the SetupDataFolders.src program](Bitmaps/SetupDataFolders.png)
+![Sample image of the SetupDataFolders.src program](Bitmaps/PleaseSelectDataFolder.png)
