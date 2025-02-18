@@ -22,6 +22,6 @@ That's all it takes to integrate the logic!
 
 ## Example
 
-Below is a sample image showcasing how it looks when `Order.src` program is started:
+Below is a sample image showcasing how it looks when the `Order.src` program is started:
 
 ![Sample image of the SetupDataFolders.src program](Bitmaps/PleaseSelectDataFolder.png)
