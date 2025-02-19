@@ -463,12 +463,6 @@ Object oMain is a Panel
 
             End_Object
 
-        End_Object
-
-        Object oExit_Toolbar is a cCJToolbar
-            Set psTitle to "Exit Toolbar"
-            Set peStretched to stStretchShared
-
             Object oAbout_MenuItem is a cCJMenuItem
                 Set psTooltip to C_$About
                 Set psDescription to C_$DescAbout
@@ -479,6 +473,34 @@ Object oMain is a Panel
                 End_Procedure
 
             End_Object
+
+            Object oKoFi_MenuItem is a cCJMenuItem
+                Set psToolTip to "Coffee time!"
+                Set psDescription to "Bye me a coffee, to support me"
+                Set psImage to "Ko-fi.ico"
+                Set pbControlBeginGroup to True
+                Procedure OnExecute Variant vCommandBarControl
+                    Runprogram Shell Background "https://ko-fi.com/nilss"
+                End_Procedure
+            End_Object
+
+            Object oSuggestion_MenuItem is a cCJMenuItem
+                Set psTooltip to "Suggest"
+                Set psDescription to "Suggest a feature, or report a bug..."
+                Set psImage to "Suggestion.ico"
+                Set pbControlBeginGroup to True
+
+                Procedure OnExecute Variant vCommandBarControl
+                    Runprogram Shell Background "https://github.com/NilsSve/DataFolderSelectorDemo/issues/1"
+                End_Procedure
+
+            End_Object
+
+        End_Object
+
+        Object oExit_Toolbar is a cCJToolbar
+            Set psTitle to "Exit Toolbar"
+            Set peStretched to stStretchShared
 
             Object oHelpMenuItem is a cCJHelpMenuItem
                 Set peControlType to xtpControlSplitButtonPopup
