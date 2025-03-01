@@ -6,11 +6,11 @@ ConfigFile=.\Programs\Config.ws
 DefaultFormHeight=12
 [Conditionals]
 Is$WebApp=False
-Is$Win64=False
-[Libraries]
-Lib1=Libraries\DataFolderSelector\DataFolderSelector20.0.sws
+Is$Win64=True
 [Projects]
 Project0=Order.src
 Project1=SetupDataFolders.src
 [ProjectParameters]
 SetupDataFolders.src=/adm
+[Libraries]
+Lib1=Libraries\DataFolderSelector\DataFolderSelector20.0.sws

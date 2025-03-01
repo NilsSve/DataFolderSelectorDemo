@@ -5,8 +5,8 @@
 	<libraries>
 		<library>
 			<libraryPath>Libraries\DataFolderSelector\DataFolderSelector24.0.sws</libraryPath>
-			<libraryTimeStamp>2025-01-30T22:12:41</libraryTimeStamp>
-			<libraryID>Lib1</libraryID>
+			<libraryTimeStamp>2025-03-01T18:20:38</libraryTimeStamp>
+			<libraryID>Lib2</libraryID>
 		</library>
 	</libraries>
 	<classes>
@@ -1128,35 +1128,14 @@
 			<image>ControlCOM.ico</image>
 			<package>cMapComponent.pkg</package>
 			<groupName>Map Component</groupName>
-			<libraryID>Lib1</libraryID>
-		</class>
-		<class>
-			<className>cSkinComboBoxCJMenuItem</className>
-			<image>ControlCJSkinFramework.ico</image>
-			<package>cSkinComboBoxCJMenuItem.pkg</package>
-			<groupName>Menus and Toolbars</groupName>
-			<libraryID>Lib1</libraryID>
-		</class>
-		<class>
-			<className>cDbUpdateHandler</className>
-			<image>ControlObject.ico</image>
-			<package>cDbUpdateHandler.pkg</package>
-			<groupName>Database Update Framework</groupName>
-			<libraryID>Lib1</libraryID>
-		</class>
-		<class>
-			<className>cDbUpdateVersion</className>
-			<image>ControlObject.ico</image>
-			<package>cDbUpdateVersion.pkg</package>
-			<groupName>Database Update Framework</groupName>
-			<libraryID>Lib1</libraryID>
+			<libraryID>Lib2</libraryID>
 		</class>
 		<class>
 			<className>cComSWXMap</className>
 			<image>ControlCOM.ico</image>
 			<package>cComSWXMap.pkg</package>
 			<groupName>ActiveX</groupName>
-			<libraryID>Lib1</libraryID>
+			<libraryID>Lib2</libraryID>
 		</class>
 	</classes>
 </classList>

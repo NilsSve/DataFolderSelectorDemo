@@ -19,17 +19,19 @@ End_Object
 Object oApplication is a cApplication
     Set psCompany to "Data Access Worldwide"
     Set psProduct to "DataFlex Examples"
-    Set psVersion to "23.0"
+    Set psVersion to "25.0"
     Set psProgram to "Order"
     Set psHelpFile to "DevelopmentGuide.chm"
     Set peHelpType to htHtmlHelp  
     
-#IF (!@ > 190)
+    // Note: This property needs to be added as it used by cRDC-grid classes.
+    Property String psGridRowBackgroundColor
+    
     Object oConnection is a cConnection
         Use LoginEncryption.pkg
         Use DatabaseLoginDialog.dg
-    End_Object
-#ENDIF
+    End_Object 
+    
 End_Object
 
 Object oToolTipController is a cToolTipController
@@ -46,11 +48,13 @@ Object oMain is a Panel
 
     Object oCommandBarSystem is a cCJCommandBarSystem
         Set pbTimerUpdate to True
-#IF (!@ > 190)
         Set pbAutoResizeIcons to True
-        Set peVisualTheme to xtpThemeOffice2013Outlook
         Set pbTabbedWorkspaces to True
-#ENDIF
+        #IF (!@ > 240)
+            Set peVisualTheme to xtpThemeNativeWindows11 
+        #ELSE
+            Set peVisualTheme to xtpThemeOffice2016Word
+        #ENDIF
 
         Procedure OnCreateCommandBars
             Handle hoOptions
