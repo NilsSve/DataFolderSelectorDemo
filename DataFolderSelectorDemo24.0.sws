@@ -11,6 +11,5 @@ Is$Win64=True
 Lib1=Libraries\DataFolderSelector\DataFolderSelector24.0.sws
 [Projects]
 Project0=Order.src
-Project1=SetupDataFolders.src
 [ProjectParameters]
 SetupDataFolders.src=/adm
