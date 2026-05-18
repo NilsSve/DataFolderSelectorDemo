@@ -2,6 +2,15 @@
 
 The **Data Folder Selector Utility** allows users to select a Data folder (Client Company) when starting a program.
 
+## Setup after cloning
+
+After cloning this repository, run **`setup.bat`** once from the repository root. It:
+
+- downloads / updates the library submodule under `Libraries\` (DataFolderSelector) to the version this workspace expects;
+- configures this clone so a normal `git pull` keeps it in sync automatically from then on.
+
+Re-run `setup.bat` any time the `Libraries\` folder looks empty or out of date, or when a new submodule is added.
+
 ## Components
 
 This utility includes two main components:
