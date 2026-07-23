@@ -4,15 +4,22 @@ setlocal
 REM ===========================================================================
 REM  DataFolderSelectorDemo - one-time setup
 REM
-REM  Run this once after cloning (and any time the Libraries\ folders look
-REM  empty or out of date, or a submodule has changed). It:
-REM    1. Downloads / updates the library submodule (DataFolderSelector) to
-REM       the exact version this workspace expects.
-REM    2. Configures THIS clone so a normal "git pull" keeps that library
-REM       in sync automatically from then on.
+REM  The libraries this workspace needs are NOT stored in this repository (see
+REM  .gitignore). This script provides them, and it behaves differently by
+REM  machine so that one arrangement serves both maintainer and user:
 REM
-REM  Nothing here is destructive: it only fetches the library and sets one
-REM  local git option for this repository.
+REM    * If a shared RDC library pool sits next to this workspace (a sibling
+REM      ..\Libraries folder carrying the marker file .rdc-library-pool), it
+REM      makes Libraries\ a JUNCTION to that pool. One shared, editable copy:
+REM      a fix made here is a fix in the pool, and every workspace linked to
+REM      the pool has it at once - nothing to propagate.
+REM
+REM    * Otherwise it CLONES the library into this workspace's own Libraries\
+REM      folder - isolated, self-contained, and it never writes anywhere
+REM      outside this workspace, so it cannot disturb libraries you already
+REM      have elsewhere.
+REM
+REM  Re-run any time Libraries\ looks missing or out of date.
 REM ===========================================================================
 
 cd /d "%~dp0"
@@ -32,36 +39,50 @@ if errorlevel 1 (
     exit /b 1
 )
 
-git rev-parse --is-inside-work-tree >nul 2>nul
-if errorlevel 1 (
-    echo [ERROR] This folder is not a git repository.
-    echo         Clone DataFolderSelectorDemo with GitHub Desktop or
-    echo         "git clone", then run setup.bat from the repository root.
-    echo.
-    pause
-    exit /b 1
+if exist "..\Libraries\.rdc-library-pool" (
+    REM ------------------------------------------------------------------ pool
+    if exist "Libraries" (
+        echo Libraries\ already present - assuming it is linked. Skipping.
+    ) else (
+        echo Shared library pool found next door - linking Libraries\ to it...
+        mklink /J "Libraries" "..\Libraries" >nul
+        if errorlevel 1 (
+            echo.
+            echo [ERROR] Could not create the junction to ..\Libraries.
+            echo         Create it by hand with:
+            echo             mklink /J "%CD%\Libraries" "%CD%\..\Libraries"
+            echo.
+            pause
+            exit /b 1
+        )
+        echo Linked: Libraries  -^>  ..\Libraries
+    )
+) else (
+    REM --------------------------------------------------------------- isolated
+    REM No shared pool. Clone the FLAT dependency set into this workspace's own
+    REM Libraries\ - DataFolderSelector plus the three it references as siblings
+    REM (..\DFAbout, ..\RDCToolsLib, ..\vwin32fh). DataFolderSelector no longer
+    REM nests them, so they must be cloned alongside it, not recursively inside.
+    REM This never writes outside this workspace.
+    for %%N in (DataFolderSelector DFAbout RDCToolsLib vwin32fh) do (
+        if not exist "Libraries\%%N\.git" (
+            echo Cloning %%N into Libraries\ ...
+            git clone https://github.com/NilsSve/Library-%%N.git "Libraries\%%N"
+            if errorlevel 1 (
+                echo.
+                echo [ERROR] Could not clone Library-%%N.
+                echo         Check your connection and that you can reach:
+                echo           https://github.com/NilsSve/Library-%%N.git
+                echo.
+                pause
+                exit /b 1
+            )
+        ) else (
+            echo Updating Libraries\%%N ...
+            git -C "Libraries\%%N" pull --ff-only
+        )
+    )
 )
-
-echo Synchronizing submodule definitions...
-git submodule sync --recursive
-
-echo.
-echo Downloading / updating the library submodule ^(this may take a minute^)...
-git submodule update --init --recursive
-if errorlevel 1 (
-    echo.
-    echo [ERROR] The submodule could not be fetched.
-    echo         Check your internet connection and that you can reach:
-    echo           - https://github.com/NilsSve/Library-DataFolderSelector.git
-    echo         Then run setup.bat again.
-    echo.
-    pause
-    exit /b 1
-)
-
-echo.
-echo Configuring this clone to keep the library in sync on every "git pull"...
-git config submodule.recurse true
 
 echo.
 if exist "%~dp0skip-local-data.cmd" (
@@ -74,12 +95,9 @@ if exist "%~dp0skip-local-data.cmd" (
 echo.
 echo === Setup complete ===
 echo.
-echo The Libraries\ folder now holds DataFolderSelector at the version this
-echo workspace expects. From now on a normal "git pull" (or Pull in GitHub
-echo Desktop) will also update it automatically.
-echo.
-echo If a brand-new library/submodule is ever added, just run setup.bat once
-echo more to pick it up.
+echo Libraries\ is ready. Open a DataFolderSelectorDemo*.sws in the Studio and
+echo build. If Libraries\ is a junction to the shared pool, editing a library
+echo file here edits the pool - there is no separate copy to drift.
 echo.
 pause
 exit /b 0
